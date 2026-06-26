@@ -11,5 +11,6 @@ data class SubnetResult(
     val lastUsableHost: String,
     val broadcastAddress: String,
     val subnetMask: String,
-    val totalUsableHosts: Int
+    val totalUsableHosts: Int,
+    val segmentName: String = ""
 )
