@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.suckneting.ui.screens.AnalyzerScreen
 import com.example.suckneting.ui.screens.FlsmScreen
 import com.example.suckneting.ui.screens.QuizScreen
 import com.example.suckneting.ui.screens.VlsmScreen
@@ -25,6 +26,9 @@ fun AppNavigation(navController: NavHostController) {
         }
         composable(Screen.Quiz.route) {
             QuizScreen()
+        }
+        composable(Screen.Analyzer.route) {
+            AnalyzerScreen()
         }
     }
 }

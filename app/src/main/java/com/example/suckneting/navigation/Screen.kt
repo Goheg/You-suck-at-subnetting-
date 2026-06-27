@@ -1,6 +1,7 @@
 package com.example.suckneting.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Schema
@@ -32,7 +33,13 @@ sealed class Screen(
         icon = Icons.Default.Psychology
     )
 
+    object Analyzer : Screen(
+        route = "analyzer",
+        label = "Analyzer",
+        icon = Icons.Default.Analytics
+    )
+
     companion object {
-        val items = listOf(Flsm, Vlsm, Quiz)
+        val items = listOf(Flsm, Vlsm, Quiz, Analyzer)
     }
 }
