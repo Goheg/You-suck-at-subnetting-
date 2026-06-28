@@ -23,7 +23,7 @@ import com.example.suckneting.ui.viewmodel.AnalysisResult
 import com.example.suckneting.ui.viewmodel.AnalyzerUiState
 import com.example.suckneting.ui.viewmodel.AnalyzerViewModel
 
-// Custom Professional Dark Palette matching the "SubnetPro" theme
+// Custom Professional Dark Palette matching the "SubnetPro" theme nice
 private val DarkBackground = Color(0xFF050C16)
 private val CardBackground = Color(0xFF0D1625)
 private val AccentPurple = Color(0xFF5D5FEF)
