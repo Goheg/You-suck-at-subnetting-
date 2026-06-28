@@ -5,9 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -26,15 +31,33 @@ class MainActivity : ComponentActivity() {
                 
                 Scaffold(
                     bottomBar = {
-                        NavigationBar {
+                        NavigationBar(
+                            containerColor = Color(0xFF050C16),
+                            tonalElevation = 0.dp,
+                            windowInsets = NavigationBarDefaults.windowInsets
+                        ) {
                             val navBackStackEntry by navController.currentBackStackEntryAsState()
                             val currentDestination = navBackStackEntry?.destination
                             
                             Screen.items.forEach { screen ->
+                                val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                                
                                 NavigationBarItem(
-                                    icon = { Icon(screen.icon, contentDescription = screen.label) },
-                                    label = { Text(screen.label) },
-                                    selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                                    icon = { 
+                                        Icon(
+                                            screen.icon, 
+                                            contentDescription = screen.label,
+                                            modifier = Modifier.size(24.dp)
+                                        ) 
+                                    },
+                                    label = { 
+                                        Text(
+                                            screen.label,
+                                            fontSize = 12.sp,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                                        ) 
+                                    },
+                                    selected = selected,
                                     onClick = {
                                         navController.navigate(screen.route) {
                                             popUpTo(navController.graph.findStartDestination().id) {
@@ -43,7 +66,14 @@ class MainActivity : ComponentActivity() {
                                             launchSingleTop = true
                                             restoreState = true
                                         }
-                                    }
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = Color.White,
+                                        selectedTextColor = Color.White,
+                                        unselectedIconColor = Color(0xFF94A3B8),
+                                        unselectedTextColor = Color(0xFF94A3B8),
+                                        indicatorColor = Color(0xFF5D5FEF)
+                                    )
                                 )
                             }
                         }
@@ -51,7 +81,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Surface(
                         modifier = Modifier.padding(innerPadding),
-                        color = MaterialTheme.colorScheme.background
+                        color = Color(0xFF050C16)
                     ) {
                         AppNavigation(navController = navController)
                     }

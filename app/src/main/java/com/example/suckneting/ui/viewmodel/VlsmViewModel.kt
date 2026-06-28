@@ -19,22 +19,20 @@ data class VlsmUiState(
     val segments: List<Pair<String, Int>> = emptyList(),
     val calculationResults: List<SubnetResult> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val totalRequiredHosts: Int = 0,
+    val totalAllocatedHosts: Int = 0
 )
 
 /**
  * ViewModel for Variable Length Subnet Mask (VLSM) logic.
- * Manages the dynamic list of segment requirements and triggers the engine's calculation.
  */
 class VlsmViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(VlsmUiState())
     val uiState: StateFlow<VlsmUiState> = _uiState.asStateFlow()
 
-    /**
-     * Adds a new network segment requirement to the state.
-     */
-    fun addSegment(name: String, hostCount: Int) {
+    fun addSegment(name: String = "", hostCount: Int = 0) {
         _uiState.update { currentState ->
             currentState.copy(
                 segments = currentState.segments + (name to hostCount),
@@ -43,25 +41,33 @@ class VlsmViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Removes a segment requirement at a specific index.
-     */
-    fun removeSegment(index: Int) {
+    fun updateSegment(index: Int, name: String, hostCount: Int) {
         _uiState.update { currentState ->
-            val updatedList = currentState.segments.toMutableList().apply {
-                removeAt(index)
+            val updatedList = currentState.segments.toMutableList()
+            if (index in updatedList.indices) {
+                updatedList[index] = name to hostCount
             }
             currentState.copy(segments = updatedList)
         }
     }
 
-    /**
-     * Executes the VLSM calculation based on the current segments and a base CIDR block.
-     */
+    fun removeSegment(index: Int) {
+        _uiState.update { currentState ->
+            val updatedList = currentState.segments.toMutableList().apply {
+                if (index in indices) removeAt(index)
+            }
+            currentState.copy(segments = updatedList)
+        }
+    }
+
+    fun clearResults() {
+        _uiState.update { it.copy(calculationResults = emptyList(), error = null) }
+    }
+
     fun calculateVlsm(baseCidr: String) {
-        val segments = _uiState.value.segments
+        val segments = _uiState.value.segments.filter { it.first.isNotBlank() && it.second > 0 }
         if (segments.isEmpty()) {
-            _uiState.update { it.copy(error = "Please add at least one segment.") }
+            _uiState.update { it.copy(error = "Please add at least one valid segment.") }
             return
         }
 
@@ -71,7 +77,16 @@ class VlsmViewModel : ViewModel() {
                 val results = withContext(Dispatchers.Default) {
                     SubnetEngine.calculateVlsm(baseCidr, segments)
                 }
-                _uiState.update { it.copy(calculationResults = results, isLoading = false) }
+                
+                val totalRequired = segments.sumOf { it.second }
+                val totalAllocated = results.sumOf { it.totalUsableHosts }
+
+                _uiState.update { it.copy(
+                    calculationResults = results, 
+                    isLoading = false,
+                    totalRequiredHosts = totalRequired,
+                    totalAllocatedHosts = totalAllocated
+                ) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.message ?: "Calculation failed.") }
             }

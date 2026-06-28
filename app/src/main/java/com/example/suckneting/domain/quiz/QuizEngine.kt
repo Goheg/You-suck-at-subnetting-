@@ -36,11 +36,24 @@ object QuizEngine {
         }
         options.shuffle()
         
+        val maskStr = SubnetEngine.ipToString(mask)
+        val blockSize = 1 shl (32 - cidr)
+        val octet3 = (networkInt shr 8) and 0xFF
+        val baseStr = ipStr.substringBeforeLast(".")
+        
+        val explanation = """
+            To find the network address for $ipStr/$cidr, follow these steps:
+            • The CIDR /$cidr means the subnet mask is $maskStr.
+            • Find the block size: 256 - ${maskStr.split(".").last()} = $blockSize.
+            • The network addresses are increments of $blockSize: 0, $blockSize, ${blockSize*2}...
+            • Since ${ipStr.split(".").last()} falls in the block starting at ${correctAnswer.split(".").last()}, the Network Address is $correctAnswer.
+        """.trimIndent()
+        
         return SubnetQuestion(
-            theQuestion = "What is the Network Address for the IP $ipStr/$cidr?",
+            theQuestion = "What is the Network Address for the IP address $ipStr/$cidr ?",
             options = options,
             correctOptionIndex = options.indexOf(correctAnswer),
-            explanation = "To find the network address, perform a bitwise AND between the IP address and the subnet mask ($cidr = ${SubnetEngine.ipToString(mask)})."
+            explanation = explanation
         )
     }
 
@@ -61,11 +74,13 @@ object QuizEngine {
         }
         options.shuffle()
         
+        val explanation = "To find the broadcast address for $ipStr/$cidr, first find the network address ($correctAnswer.split('.').dropLast(1).joinToString('.') + '.' + (networkInt and 0xFF)), then set all host bits (the last ${32 - cidr} bits) to 1, which results in $correctAnswer."
+        
         return SubnetQuestion(
-            theQuestion = "What is the Broadcast Address for the IP $ipStr/$cidr?",
+            theQuestion = "What is the Broadcast Address for the IP address $ipStr/$cidr ?",
             options = options,
             correctOptionIndex = options.indexOf(correctAnswer),
-            explanation = "To find the broadcast address, take the network address and set all host bits (the last ${32 - cidr} bits) to 1."
+            explanation = explanation
         )
     }
 
@@ -77,8 +92,8 @@ object QuizEngine {
         val correctAnswer = usableHosts.toString()
         
         val options = mutableSetOf(correctAnswer)
-        options.add(totalHosts.toString()) // Distractor: Total hosts instead of usable
-        options.add((usableHosts + 2).toString()) // Distractor
+        options.add(totalHosts.toString())
+        options.add((usableHosts + 2).toString())
         while (options.size < 4) {
             val randomCidr = Random.nextInt(24, 31)
             val h = 32 - randomCidr
@@ -96,12 +111,10 @@ object QuizEngine {
     }
 
     private fun generateRandomIp(): Int {
-        // Generate IPs in common private ranges for realism
         val firstOctet = 192
         val secondOctet = 168
         val thirdOctet = Random.nextInt(256)
         val fourthOctet = Random.nextInt(256)
-        
         return (firstOctet shl 24) or (secondOctet shl 16) or (thirdOctet shl 8) or fourthOctet
     }
 }

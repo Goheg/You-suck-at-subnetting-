@@ -1,8 +1,8 @@
 package com.example.suckneting.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Schema
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -18,7 +18,7 @@ sealed class Screen(
     object Flsm : Screen(
         route = "flsm",
         label = "FLSM",
-        icon = Icons.Default.GridOn
+        icon = Icons.Default.GridView
     )
 
     object Vlsm : Screen(
@@ -36,7 +36,7 @@ sealed class Screen(
     object Analyzer : Screen(
         route = "analyzer",
         label = "Analyzer",
-        icon = Icons.Default.Analytics
+        icon = Icons.Default.Assessment
     )
 
     companion object {

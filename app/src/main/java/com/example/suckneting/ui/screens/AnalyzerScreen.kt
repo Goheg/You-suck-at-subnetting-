@@ -1,17 +1,20 @@
 package com.example.suckneting.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,198 +23,279 @@ import com.example.suckneting.ui.viewmodel.AnalysisResult
 import com.example.suckneting.ui.viewmodel.AnalyzerUiState
 import com.example.suckneting.ui.viewmodel.AnalyzerViewModel
 
-/**
- * IP Analyzer screen that breaks down an IP address and mask into network details.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+// Custom Professional Dark Palette matching the "SubnetPro" theme
+private val DarkBackground = Color(0xFF050C16)
+private val CardBackground = Color(0xFF0D1625)
+private val AccentPurple = Color(0xFF5D5FEF)
+private val TextSecondary = Color(0xFF94A3B8)
+private val BorderColor = Color(0xFF1E293B)
+private val TipTeal = Color(0xFF2DD4BF)
+
 @Composable
 fun AnalyzerScreen(
     viewModel: AnalyzerViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    var ipInput by remember { mutableStateOf("192.168.1.15") }
+    var ipInput by remember { mutableStateOf("192.168.1.13") }
     var maskInput by remember { mutableStateOf("24") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("SubnetPro - IP Analyzer") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Input Card
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = ipInput,
-                            onValueChange = { ipInput = it },
-                            label = { Text("IP Address") },
-                            placeholder = { Text("e.g. 192.168.1.1") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = maskInput,
-                            onValueChange = { maskInput = it },
-                            label = { Text("Subnet Mask (CIDR or Decimal)") },
-                            placeholder = { Text("e.g. 24 or 255.255.255.0") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true
-                        )
-                        Button(
-                            onClick = { viewModel.analyzeIp(ipInput, maskInput) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            Text("Analyze Network")
-                        }
-                    }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = DarkBackground
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header matching the UI Design
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("SubnetPro", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                IconButton(onClick = {}) {
+                    Icon(Icons.Outlined.Settings, contentDescription = "Settings", tint = TextSecondary)
                 }
             }
 
-            // Results Display
-            when (val state = uiState) {
-                is AnalyzerUiState.Success -> {
-                    item {
-                        AnalysisDetailsCard(state.result)
-                    }
-                    item {
-                        BinaryVisualizerCard(state.result)
-                    }
-                }
-                is AnalyzerUiState.InvalidInput -> {
-                    item {
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                            modifier = Modifier.fillMaxWidth()
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Network Input Section
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        AnalyzerInputField(
+                            label = "IP ADDRESS",
+                            value = ipInput,
+                            onValueChange = { ipInput = it },
+                            placeholder = "192.168.1.13"
+                        )
+                        AnalyzerInputField(
+                            label = "SUBNET MASK (CIDR / DEC)",
+                            value = maskInput,
+                            onValueChange = { maskInput = it },
+                            placeholder = "24"
+                        )
+                        Button(
+                            onClick = { viewModel.analyzeIp(ipInput, maskInput) },
+                            modifier = Modifier.fillMaxWidth().height(52.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentPurple),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
-                            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Info, contentDescription = "Error", tint = MaterialTheme.colorScheme.error)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Analytics, contentDescription = null, modifier = Modifier.size(20.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text(state.message, color = MaterialTheme.colorScheme.onErrorContainer)
+                                Text("Analyze Network", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
                 }
-                else -> {}
+
+                // Calculation Results Dynamic Content
+                when (val state = uiState) {
+                    is AnalyzerUiState.Success -> {
+                        item { NetworkDetailsCard(state.result) }
+                        item { TotalHostsCard(state.result) }
+                        item { BinaryRepresentationCard(state.result) }
+                    }
+                    is AnalyzerUiState.InvalidInput -> {
+                        item {
+                            Text(state.message, color = Color.Red, modifier = Modifier.padding(8.dp))
+                        }
+                    }
+                    else -> {}
+                }
             }
         }
     }
 }
 
 @Composable
-fun AnalysisDetailsCard(result: AnalysisResult) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Network Details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            HorizontalDivider()
-            AnalyzerResultRow("Network Address", result.networkAddress)
-            AnalyzerResultRow("Broadcast Address", result.broadcastAddress)
-            AnalyzerResultRow("Usable Range", "${result.firstUsable} - ${result.lastUsable}")
-            AnalyzerResultRow("Wildcard Mask", result.wildcardMask)
-            AnalyzerResultRow("Subnet Mask", "${result.subnetMask} (/${result.cidr})")
-        }
+fun AnalyzerInputField(label: String, value: String, onValueChange: (String) -> Unit, placeholder: String) {
+    Column {
+        Text(label, color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(placeholder, color = TextSecondary.copy(alpha = 0.4f)) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AccentPurple,
+                unfocusedBorderColor = BorderColor,
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true
+        )
     }
 }
 
 @Composable
-fun AnalyzerResultRow(label: String, value: String) {
-    Row(
+fun NetworkDetailsCard(result: AnalysisResult) {
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
     ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
-        Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Storage, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Network Details", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(24.dp))
+            AnalysisRow("Network Address", result.networkAddress)
+            AnalysisRow("Broadcast Address", result.broadcastAddress)
+            
+            // Usable Range split into two lines for precision mapping to screenshot
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column {
+                    Text("Usable", color = TextSecondary, fontSize = 15.sp)
+                    Text("Range", color = TextSecondary, fontSize = 15.sp)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("${result.firstUsable} -", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Text(result.lastUsable, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+            
+            AnalysisRow("Subnet Mask", "${result.subnetMask} (/${result.cidr})")
+        }
     }
 }
 
 @Composable
-fun BinaryVisualizerCard(result: AnalysisResult) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("Binary Representation", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("IP Address:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                BinaryOctetDisplay(binary = result.ipBinary, cidr = result.cidr)
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                Text("Subnet Mask:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                BinaryOctetDisplay(binary = result.maskBinary, cidr = result.cidr)
+fun AnalysisRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, color = TextSecondary, fontSize = 15.sp)
+        Text(value, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun TotalHostsCard(result: AnalysisResult) {
+    val hostBits = 32 - result.cidr
+    val totalHosts = if (result.cidr >= 31) 0 else (1 shl hostBits) - 2
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text("TOTAL HOSTS", color = TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Spacer(Modifier.height(4.dp))
+            Text(totalHosts.toString(), color = TipTeal, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Info, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(14.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("2^$hostBits - 2 Available", color = TextSecondary, fontSize = 12.sp)
             }
-            
-            Text(
-                "Note: Highlighted bits represent the network prefix (/${result.cidr}).",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline
+            Spacer(Modifier.height(16.dp))
+            LinearProgressIndicator(
+                progress = { 0.7f }, // Illustrative static progress matching screenshot
+                modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                color = TipTeal,
+                trackColor = BorderColor
             )
         }
     }
 }
 
 @Composable
-fun BinaryOctetDisplay(binary: String, cidr: Int) {
-    val octets = binary.chunked(8)
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), MaterialTheme.shapes.small)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.Center
+fun BinaryRepresentationCard(result: AnalysisResult) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
     ) {
-        var globalBitIndex = 0
-        octets.forEachIndexed { octetIndex, octet ->
-            octet.forEach { bit ->
-                globalBitIndex++
-                val isNetworkPortion = globalBitIndex <= cidr
-                
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 1.dp)
-                        .background(
-                            color = if (isNetworkPortion) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                            shape = MaterialTheme.shapes.extraSmall
-                        )
-                        .padding(horizontal = 2.dp)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.ViewWeek, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Binary Representation", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+                Surface(
+                    color = BorderColor.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
-                        text = bit.toString(),
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        fontWeight = if (isNetworkPortion) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isNetworkPortion) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                        "BIT LEVEL VIEW",
+                        color = TextSecondary.copy(alpha = 0.5f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
-            if (octetIndex < 3) {
-                Text(
-                    text = ".",
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(horizontal = 2.dp),
-                    color = MaterialTheme.colorScheme.outline
-                )
+
+            Spacer(Modifier.height(24.dp))
+            Text("IP Address: ${result.ipAddress}", color = TextSecondary, fontSize = 13.sp)
+            Spacer(Modifier.height(12.dp))
+            BinaryOctetGrid(result.ipBinary, highlightColor = AccentPurple)
+
+            Spacer(Modifier.height(24.dp))
+            Text("Subnet Mask: ${result.subnetMask}", color = TipTeal, fontSize = 13.sp)
+            Spacer(Modifier.height(12.dp))
+            BinaryOctetGrid(result.maskBinary, highlightColor = TipTeal)
+
+            Spacer(Modifier.height(24.dp))
+            Text(
+                "Note: Highlighted bits represent the network prefix (/${result.cidr}).",
+                color = TextSecondary.copy(alpha = 0.4f),
+                fontSize = 11.sp,
+                fontStyle = FontStyle.Italic
+            )
+        }
+    }
+}
+
+@Composable
+fun BinaryOctetGrid(binary: String, highlightColor: Color) {
+    val octets = binary.chunked(8)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        octets.forEach { octet ->
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                octet.forEach { bit ->
+                    BitCell(bit.toString(), isHighlighted = bit == '1', color = highlightColor)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun BitCell(bit: String, isHighlighted: Boolean, color: Color) {
+    Box(
+        modifier = Modifier
+            .size(width = 30.dp, height = 36.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(if (isHighlighted) color else BorderColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = bit,
+            color = if (isHighlighted) Color.White else TextSecondary,
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
     }
 }

@@ -109,9 +109,10 @@ object SubnetEngine {
                     firstUsableHost = firstUsable,
                     lastUsableHost = lastUsable,
                     broadcastAddress = ipToString(broadcastIp),
-                    subnetMask = ipToString(subnetMask),
+                    subnetMask = "${ipToString(subnetMask)}/$prefix",
                     totalUsableHosts = totalUsable,
-                    segmentName = segmentName
+                    segmentName = segmentName,
+                    requiredHosts = hostsNeeded
                 )
             )
 
@@ -164,7 +165,7 @@ object SubnetEngine {
                     firstUsableHost = firstUsable,
                     lastUsableHost = lastUsable,
                     broadcastAddress = ipToString(subnetBroadcast),
-                    subnetMask = maskStr,
+                    subnetMask = "$maskStr/$newPrefix",
                     totalUsableHosts = totalUsableHosts
                 )
             )

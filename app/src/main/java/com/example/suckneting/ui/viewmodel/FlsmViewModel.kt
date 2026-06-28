@@ -33,6 +33,10 @@ class FlsmViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<FlsmUiState>(FlsmUiState.Idle)
     val uiState: StateFlow<FlsmUiState> = _uiState.asStateFlow()
 
+    fun reset() {
+        _uiState.value = FlsmUiState.Idle
+    }
+
     /**
      * Executes the subnet calculation.
      * Uses Dispatchers.Default to ensure the main thread remains responsive
